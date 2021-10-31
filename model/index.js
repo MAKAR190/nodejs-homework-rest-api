@@ -1,75 +1,51 @@
-const fs = require("fs").promises;
-const path = require("path");
-const contactsPath = path.join(__dirname + "/contacts.json");
+const Contacts = require("./Contacts");
 const listContacts = async () => {
-  let contacts = await fs
-    .readFile(contactsPath)
-    .catch(() => console.log("smth went wrong..."));
-  contacts = JSON.parse(contacts);
+  let contacts = await Contacts.find();
   return contacts;
 };
 
 const getContactById = async (contactId) => {
-  let contacts = await fs
-    .readFile(contactsPath)
-    .catch(() => console.log("smth went wrong..."));
-  contacts = JSON.parse(contacts);
-
-  const targetContact = await contacts.find(
-    (contact) => contact.id === Number(contactId)
-  );
-
-  return targetContact;
+  let contact = await Contacts.findById(contactId);
+  if (!contact) {
+    return false;
+  } else {
+    return contact;
+  }
 };
 
 const removeContact = async (contactId) => {
-  let contacts = await fs
-    .readFile(contactsPath)
-    .catch(() => console.log("smth went wrong..."));
-  contacts = JSON.parse(contacts);
-
-  const target = await contacts.find(
-    (contact) => contact.id === Number(contactId)
-  );
-
-  if (!target) {
+  let contact = await Contacts.findById(contactId);
+  if (!contact) {
     return false;
   } else {
-    const newContacts = contacts.filter(
-      (contact) => contact.id !== Number(contactId)
-    );
-    await fs.writeFile(contactsPath, JSON.stringify(newContacts));
+    await Contacts.findByIdAndDelete(contactId);
     return { message: "contact deleted" };
   }
 };
 
 const addContact = async (body) => {
-  let contacts = await fs
-    .readFile(contactsPath)
-    .catch(() => console.log("smth went wrong..."));
-  contacts = JSON.parse(contacts);
-  const newContact = {
-    id: contacts[contacts.length - 1].id + 1,
-    ...body,
-  };
-  contacts.push(newContact);
-  await fs.writeFile(contactsPath, JSON.stringify(contacts));
+  let newContact = await Contacts.create(body);
   return newContact;
 };
 
 const updateContact = async (contactId, body) => {
-  let contacts = await fs
-    .readFile(contactsPath)
-    .catch(() => console.log("smth went wrong..."));
-  contacts = JSON.parse(contacts);
-  contacts = contacts.map((contact) =>
-    contact.id === Number(contactId) ? { ...contact, ...body } : contact
-  );
-  await fs.writeFile(contactsPath, JSON.stringify(contacts));
-  const newContacts = await fs.readFile(contactsPath);
-  const target = JSON.parse(newContacts).find(
-    ({ id }) => id === Number(contactId)
-  );
+  let target = await Contacts.findByIdAndUpdate(contactId, body, {
+    new: true,
+  });
+  if (!target) {
+    return false;
+  } else {
+    return target;
+  }
+};
+const updateStatusContact = async (contactId, body) => {
+  let target = await Contacts.findById(contactId);
+  if (!target) {
+    return false;
+  }
+  await Contacts.findByIdAndUpdate(contactId, body, {
+    new: true,
+  });
   return target;
 };
 
@@ -79,4 +55,5 @@ module.exports = {
   removeContact,
   addContact,
   updateContact,
+  updateStatusContact,
 };
