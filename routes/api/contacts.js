@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { auth } = require("../../middlewares");
 const {
   validatePost,
   validatePut,
@@ -13,16 +14,19 @@ const {
   updateContact,
   updateStatusContact,
 } = require("../../model/index");
-router.get("/", async (req, res, next) => {
+router.get("/", auth, async (req, res, next) => {
   try {
-    const contacts = await listContacts();
+    const { page = 1, limit = 20, favorite } = req.query;
+    if (page === "") {
+      page = 1;
+    }
+    const contacts = await listContacts(limit, page, favorite);
     res.status(200).json({ contacts: contacts });
   } catch (error) {
     res.status(500).json(error);
   }
 });
-
-router.get("/:contactId", async (req, res, next) => {
+router.get("/:contactId", auth, async (req, res, next) => {
   try {
     const contact = await getContactById(req.params.contactId);
     if (!contact) {
@@ -35,7 +39,7 @@ router.get("/:contactId", async (req, res, next) => {
   }
 });
 
-router.post("/", validatePost(), async (req, res, next) => {
+router.post("/", validatePost(), auth, async (req, res, next) => {
   try {
     const newContact = await addContact(req.body);
     res.status(201).json({ newContact: newContact });
@@ -44,7 +48,7 @@ router.post("/", validatePost(), async (req, res, next) => {
   }
 });
 
-router.delete("/:contactId", async (req, res, next) => {
+router.delete("/:contactId", auth, async (req, res, next) => {
   try {
     const removedContact = await removeContact(req.params.contactId);
     if (!removedContact) {
@@ -57,7 +61,7 @@ router.delete("/:contactId", async (req, res, next) => {
   }
 });
 
-router.patch("/:contactId", validatePut(), async (req, res, next) => {
+router.patch("/:contactId", validatePut(), auth, async (req, res, next) => {
   try {
     const updatedContact = await updateContact(req.params.contactId, req.body);
     if (!updatedContact) {
@@ -71,6 +75,7 @@ router.patch("/:contactId", validatePut(), async (req, res, next) => {
 });
 router.patch(
   "/:contactId/favorite",
+  auth,
   validateFavorite(),
   async (req, res, next) => {
     try {

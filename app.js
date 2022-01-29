@@ -2,7 +2,10 @@ const express = require("express");
 const volleyball = require("volleyball");
 const cors = require("cors");
 const mongoose = require("mongoose");
-const contactsRouter = require("./routes/api/contacts");
+const passport = require("passport");
+const { ExtractJwt, Strategy } = require("passport-jwt");
+const { contacts, auth } = require("./routes/api");
+const { User } = require("./model");
 require("dotenv").config();
 const app = express();
 
@@ -13,12 +16,32 @@ mongoose
     console.log(err);
     process.exit(1);
   });
-
+passport.use(
+  new Strategy(
+    {
+      secretOrKey: process.env.JWT_SECRET,
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+    },
+    async (payload, done) => {
+      try {
+        const user = await User.findById(payload._id);
+        if (!user) {
+          done(new Error("User not found"));
+          return;
+        }
+        done(null, user);
+      } catch (error) {
+        done(error);
+      }
+    }
+  )
+);
 app.use(volleyball);
 app.use(cors());
 app.use(express.json());
 
-app.use("/api/contacts", contactsRouter);
+app.use("/api/contacts", contacts);
+app.use("/api/users", auth);
 
 app.use((req, res) => {
   res.status(404).json({ message: "Not found" });

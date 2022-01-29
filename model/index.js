@@ -1,6 +1,16 @@
 const Contacts = require("./Contacts");
-const listContacts = async () => {
-  let contacts = await Contacts.find();
+const listContacts = async (limit, page, favorite) => {
+  if (favorite) {
+    let contacts = await Contacts.find({ favorite: true }, null, {
+      limit: Number(limit),
+      skip: (Number(page) - 1) * Number(limit),
+    });
+    return contacts;
+  }
+  let contacts = await Contacts.find(null, null, {
+    limit: Number(limit),
+    skip: (Number(page) - 1) * Number(limit),
+  });
   return contacts;
 };
 

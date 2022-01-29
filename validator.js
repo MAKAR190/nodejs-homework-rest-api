@@ -17,6 +17,16 @@ const putContactSchema = yup.object().shape({
 const patchFavoriteSchema = yup.object().shape({
   favorite: yup.boolean().required("Missing Field Favorite"),
 });
+const patchSubscriptionSchema = yup.object().shape({
+  subscription: yup
+    .string()
+    .oneOf(["starter", "pro", "business"])
+    .required("Missing Field subscripion"),
+});
+const registerSchema = yup.object().shape({
+  email: yup.string().email().required(),
+  password: yup.string().required(),
+});
 const validatePost = () => async (req, res, next) => {
   try {
     await createContactSchema.validate(req.body, { abortEarly: false });
@@ -41,8 +51,26 @@ const validateFavorite = () => async (req, res, next) => {
     res.status(400).json(error.message);
   }
 };
+const validateSubscription = () => async (req, res, next) => {
+  try {
+    await patchSubscriptionSchema.validate(req.body, { abortEarly: false });
+    next();
+  } catch (error) {
+    res.status(400).json(error.message);
+  }
+};
+const registerValidation = () => async (req, res, next) => {
+  try {
+    await registerSchema.validate(req.body, { abortEarly: false });
+    next();
+  } catch (error) {
+    res.status(400).json(error.message);
+  }
+};
 module.exports = {
   validatePost,
   validatePut,
   validateFavorite,
+  registerValidation,
+  validateSubscription,
 };
