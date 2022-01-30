@@ -10,6 +10,7 @@ router.post("/signup", registerValidation(), async (req, res) => {
     const user = await User.findOne({ email: email });
     if (user) {
       res.status(409).json({ message: "Email in use" });
+      return;
     }
     const newUser = new User(req.body);
     await newUser.hashPassword();
@@ -68,6 +69,7 @@ router.patch("/subscription/:id", validateSubscription(), async (req, res) => {
     );
     if (!updatedContact) {
       res.status(404).json({ message: "Not Found" });
+      return;
     } else {
       res.status(200).json({ updatedContact: updatedContact });
     }
