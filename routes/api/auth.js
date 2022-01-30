@@ -13,13 +13,13 @@ router.post("/signup", registerValidation(), async (req, res) => {
     }
     const newUser = new User(req.body);
     await newUser.hashPassword();
-    newUser.save();
+    await newUser.save();
     const payload = {
       _id: newUser._id,
     };
     const jwtToken = jwt.sign(payload, process.env.JWT_SECRET);
     res.status(201).json({
-      ...newUser,
+      newUser,
       token: jwtToken,
     });
   } catch (error) {
@@ -30,19 +30,19 @@ router.post("/signup", registerValidation(), async (req, res) => {
 router.post("/login", registerValidation(), async (req, res) => {
   try {
     const { email } = req.body;
-    const data = await User.findOne({ email });
-    if (!data || !(await data.validatePassword(req.body.password))) {
+    const user = await User.findOne({ email });
+    if (!user || !(await user.validatePassword(req.body.password))) {
       res.status(409).json({ message: "Email or password is wrong" });
       return;
     }
     const payload = {
-      _id: data._id,
+      _id: user._id,
     };
     const jwtToken = jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: "7d",
     });
     res.status(200).json({
-      user: { ...data },
+      user,
       token: jwtToken,
     });
   } catch (error) {
