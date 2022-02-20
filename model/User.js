@@ -15,6 +15,7 @@ const User = new Schema({
     enum: ["starter", "pro", "business"],
     default: "starter",
   },
+  avatarUrl: String,
 });
 User.methods.hashPassword = async function () {
   this.password = await bcrypt.hash(this.password, 12);
