@@ -105,7 +105,7 @@ router.patch(
       const user = await User.findByIdAndUpdate(
         req.params.id,
         {
-          avatarUrl: `${req.file.path}`,
+          avatarUrl: `${req.file.filename}`,
         },
         { new: true }
       );
