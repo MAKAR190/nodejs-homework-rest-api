@@ -16,6 +16,14 @@ const User = new Schema({
     default: "starter",
   },
   avatarUrl: String,
+  verify: {
+    type: Boolean,
+    default: false,
+  },
+  verificationToken: {
+    type: String,
+    required: [false, "Verify token is required"],
+  },
 });
 User.methods.hashPassword = async function () {
   this.password = await bcrypt.hash(this.password, 12);

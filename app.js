@@ -7,9 +7,10 @@ const { ExtractJwt, Strategy } = require("passport-jwt");
 const { contacts, auth } = require("./routes/api");
 const User = require("./model/User");
 const path = require("path");
+const sgMail = require("@sendgrid/mail");
 require("dotenv").config();
 const app = express();
-
+sgMail.setApiKey(process.env.SG_KEY);
 if (process.env.NODE_ENV !== "test") {
   mongoose
     .connect(process.env.MONGO_URL)

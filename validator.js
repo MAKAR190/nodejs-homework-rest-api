@@ -17,6 +17,9 @@ const putContactSchema = yup.object().shape({
 const patchFavoriteSchema = yup.object().shape({
   favorite: yup.boolean().required("Missing Field Favorite"),
 });
+const verifyEmailSchema = yup.object().shape({
+  email: yup.string().email().required("Missing Field Email"),
+});
 const patchSubscriptionSchema = yup.object().shape({
   subscription: yup
     .string()
@@ -67,10 +70,19 @@ const registerValidation = () => async (req, res, next) => {
     res.status(400).json(error.message);
   }
 };
+const emailValidation = () => async (req, res, next) => {
+  try {
+    await verifyEmailSchema.validate(req.body, { abortEarly: false });
+    next();
+  } catch (error) {
+    res.status(400).json(error.message);
+  }
+};
 module.exports = {
   validatePost,
   validatePut,
   validateFavorite,
   registerValidation,
   validateSubscription,
+  emailValidation
 };
